@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+    <div>
+        <a href="{% url 'history' %}" style="display:inline-block; margin-bottom:0.5rem; color:var(--text-secondary); text-decoration:none;">
+            ← Back to Vault
+        </a>
+        <h1>{{ scan.filename|default:"Manual Text Entry" }}</h1>
+        <p style="color:var(--text-secondary)">Scanned on: {{ scan.created_at|date:"M d, Y H:i" }}</p>
+    </div>
+</div>
+
+<div class="results-grid visible">
+    <div class="glass-panel gauge-container neon-border">
+        <h3>AI Probability</h3>
+        <p style="color:var(--text-secondary); font-size:0.875rem; margin-bottom:1.5rem">Confidence Score</p>
+        
+        {% if scan.ai_probability > 70 %}
+            <div class="gauge" style="--gauge-deg: {{ scan.ai_probability|add:"0"|stringformat:".2f"|title }}deg; --gauge-color: var(--color-red); background: conic-gradient(var(--gauge-color) calc({{ scan.ai_probability }} * 3.6deg), rgba(255,255,255,0.1) 0);">
+                <span class="gauge-value" style="color:var(--color-red)">{{ scan.ai_probability }}%</span>
+            </div>
+        {% elif scan.ai_probability > 40 %}
+            <div class="gauge" style="--gauge-deg: {{ scan.ai_probability|add:"0"|stringformat:".2f"|title }}deg; --gauge-color: var(--color-amber); background: conic-gradient(var(--gauge-color) calc({{ scan.ai_probability }} * 3.6deg), rgba(255,255,255,0.1) 0);">
+                <span class="gauge-value" style="color:var(--color-amber)">{{ scan.ai_probability }}%</span>
+            </div>
+        {% else %}
+            <div class="gauge" style="--gauge-deg: {{ scan.ai_probability|add:"0"|stringformat:".2f"|title }}deg; --gauge-color: var(--color-emerald); background: conic-gradient(var(--gauge-color) calc({{ scan.ai_probability }} * 3.6deg), rgba(255,255,255,0.1) 0);">
+                <span class="gauge-value" style="color:var(--color-emerald)">{{ scan.ai_probability }}%</span>
+            </div>
+        {% endif %}
+        
+        <div class="metrics-box">
+            <div class="metric">
+                <span class="metric-val">{{ scan.perplexity }}</span>
+                <span style="font-size:0.75rem; color:var(--text-secondary)">Perplexity</span>
+            </div>
+            <div class="metric">
+                <span class="metric-val">{{ scan.burstiness }}</span>
+                <span style="font-size:0.75rem; color:var(--text-secondary)">Burstiness</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-panel" style="padding:2rem; overflow-y:auto; max-height:80vh">
+        <h3>Stylometric Analysis</h3>
+        <div style="display:flex; gap:1rem; margin-top:1rem; margin-bottom:2rem; font-size:0.875rem">
+            <span style="display:flex; align-items:center; gap:0.5rem"><div style="width:12px;height:12px;background:#ef4444;border-radius:2px"></div> High AI</span>
+            <span style="display:flex; align-items:center; gap:0.5rem"><div style="width:12px;height:12px;background:#f59e0b;border-radius:2px"></div> Likely AI</span>
+            <span style="display:flex; align-items:center; gap:0.5rem"><div style="width:12px;height:12px;background:#10b981;border-radius:2px"></div> Human</span>
+        </div>
+        
+        <div class="heatmap-container" style="background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid var(--glass-border)">
+            {% for item in scan.heatmap_data %}
+                <span class="sentence {{ item.color }}" title="Score: {{ item.score }}">{{ item.text }} </span>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
